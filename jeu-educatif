@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>🛡️ حارس الإنترنت</title>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+Bhaijaan+2:wght@500;700;800&family=Tajawal:wght@400;600;700;900&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --bg:#07090f;--panel:#0f1520;--panel2:#131c2a;--border:#1e2d40;
+  --cyan:#00e5c8;--blue:#2979ff;--violet:#8b5cf6;--pink:#f472b6;
+  --green:#10d97a;--red:#ff4757;--yellow:#ffd32a;--orange:#ff8c00;
+  --text:#dde6f0;--muted:#5a7390;--gC:rgba(0,229,200,.18);--gB:rgba(41,121,255,.18);
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+html{scroll-behavior:smooth;}
+body{font-family:'Tajawal',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden;position:relative;}
+#cvsBg{position:fixed;inset:0;z-index:0;opacity:.55;}
+.scanline{position:fixed;inset:0;z-index:0;pointer-events:none;background:repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(0,229,200,.018) 3px,rgba(0,229,200,.018) 4px);}
+#fx{position:fixed;inset:0;pointer-events:none;z-index:9999;overflow:hidden;}
+.cf{position:absolute;top:-20px;width:10px;height:10px;border-radius:var(--r,2px);animation:cfFall var(--d,2s) var(--dl,0s) cubic-bezier(.3,0,.7,1) forwards;}
+@keyframes cfFall{0%{transform:translateY(0) rotate(0) scaleX(1);opacity:1;}80%{opacity:1;}100%{transform:translateY(110vh) rotate(var(--rot,540deg)) scaleX(.5);opacity:0;}}
+.spark{position:absolute;border-radius:50%;animation:sparkOut .6s ease-out forwards;}
+@keyframes sparkOut{0%{transform:scale(1);opacity:1;}100%{transform:scale(0) translate(var(--tx,30px),var(--ty,-30px));opacity:0;}}
+#app{position:relative;z-index:1;max-width:760px;margin:0 auto;padding:16px 14px 40px;display:flex;flex-direction:column;gap:18px;align-items:center;}
+.screen{display:none;width:100%;}
+.screen.active{display:block;animation:fadeUp .4s ease both;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px);}to{opacity:1;transform:translateY(0);}}
+.hdr{text-align:center;padding:8px 0 0;}
+.logo{font-family:'Baloo Bhaijaan 2',cursive;font-size:clamp(2rem,6.5vw,3rem);font-weight:800;background:linear-gradient(135deg,var(--cyan) 0%,var(--blue) 50%,var(--violet) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;filter:drop-shadow(0 0 22px var(--gC));animation:logoPulse 4s ease-in-out infinite alternate;}
+@keyframes logoPulse{from{filter:drop-shadow(0 0 10px var(--gC));}to{filter:drop-shadow(0 0 28px rgba(139,92,246,.5));}}
+.logo-sub{color:var(--muted);font-size:.95rem;margin-top:2px;letter-spacing:.3px;}
+.hud{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;width:100%;}
+.hc{background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:10px 8px;text-align:center;transition:transform .2s,box-shadow .2s;}
+.hc:hover{transform:translateY(-2px);}
+.hc-lbl{font-size:.65rem;text-transform:uppercase;letter-spacing:1.5px;color:var(--muted);font-weight:700;}
+.hc-val{font-size:1.65rem;font-weight:900;line-height:1.15;margin-top:2px;}
+.vc{color:var(--cyan);}.vl{color:var(--red);font-size:1.1rem;letter-spacing:2px;}.vv{color:var(--blue);}.vb{color:var(--yellow);font-size:1rem;letter-spacing:2px;}
+.pulse-anim{animation:hudPulse .4s ease;}
+@keyframes hudPulse{0%{transform:scale(1);}50%{transform:scale(1.25);}100%{transform:scale(1);}}
+.map-title{font-family:'Baloo Bhaijaan 2',cursive;font-size:1.6rem;font-weight:800;color:var(--cyan);text-align:center;margin-bottom:6px;}
+.map-sub{text-align:center;color:var(--muted);font-size:.9rem;margin-bottom:20px;}
+.levels-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px;}
+.lvl-card{background:var(--panel);border:1.5px solid var(--border);border-radius:18px;padding:20px 16px;cursor:pointer;transition:all .25s;text-align:center;position:relative;overflow:hidden;}
+.lvl-card:hover{transform:translateY(-4px);border-color:var(--cyan);box-shadow:0 8px 30px var(--gC);}
+.lvl-card.locked{opacity:.45;cursor:not-allowed;pointer-events:none;}
+.lvl-card.done{border-color:var(--green);}
+.lvl-card.done::after{content:'✓';position:absolute;top:10px;left:14px;color:var(--green);font-size:1.2rem;font-weight:900;}
+.lvl-icon{font-size:2.8rem;margin-bottom:8px;}
+.lvl-name{font-size:1rem;font-weight:700;color:var(--text);margin-bottom:4px;}
+.lvl-desc{font-size:.78rem;color:var(--muted);line-height:1.4;}
+.lvl-stars{margin-top:8px;font-size:1rem;color:var(--yellow);letter-spacing:2px;}
+.lvl-badge{position:absolute;top:10px;right:10px;font-size:.7rem;font-weight:700;padding:3px 8px;border-radius:10px;background:rgba(255,211,42,.15);color:var(--yellow);}
+.lvl-banner{display:flex;align-items:center;gap:10px;background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:10px 16px;width:100%;}
+.lvl-banner-icon{font-size:1.6rem;}
+.lvl-banner-info{flex:1;}
+.lvl-banner-name{font-size:.95rem;font-weight:700;color:var(--cyan);}
+.lvl-banner-prog{font-size:.75rem;color:var(--muted);margin-top:1px;}
+.prog-bar{height:6px;background:var(--border);border-radius:6px;overflow:hidden;margin-top:5px;}
+.prog-fill{height:100%;background:linear-gradient(90deg,var(--cyan),var(--blue));border-radius:6px;transition:width .5s ease;box-shadow:0 0 8px var(--gC);}
+.timer-outer{width:100%;height:7px;background:var(--border);border-radius:7px;overflow:hidden;}
+.timer-inner{height:100%;border-radius:7px;transition:width 1s linear,background .5s;background:linear-gradient(90deg,var(--green),var(--cyan));}
+.qcard{background:var(--panel);border:1px solid var(--border);border-radius:22px;padding:26px 22px;width:100%;position:relative;overflow:hidden;}
+.qcard-glow{position:absolute;inset:-1px;border-radius:22px;background:linear-gradient(135deg,var(--cyan),transparent 40%,var(--violet));opacity:.07;pointer-events:none;}
+.qcat{display:inline-flex;align-items:center;gap:6px;padding:4px 14px;border-radius:20px;font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:14px;}
+.qicon{font-size:3.5rem;text-align:center;margin-bottom:12px;display:block;animation:iconBob 2.5s ease-in-out infinite alternate;}
+@keyframes iconBob{from{transform:translateY(0);}to{transform:translateY(-10px);}}
+.qtitle{font-size:1.15rem;font-weight:900;color:var(--text);margin-bottom:8px;line-height:1.4;}
+.qstory{font-size:.95rem;color:#b0c4d8;line-height:1.8;margin-bottom:20px;}
+.choices{display:flex;flex-direction:column;gap:10px;}
+.cbtn{background:rgba(255,255,255,.03);border:1.5px solid var(--border);border-radius:13px;padding:14px 16px;text-align:right;color:var(--text);font-family:'Tajawal',sans-serif;font-size:.95rem;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:12px;line-height:1.45;transition:all .2s;position:relative;overflow:hidden;}
+.cbtn::before{content:'';position:absolute;inset:0;background:var(--cyan);opacity:0;transition:opacity .2s;}
+.cbtn:hover{border-color:var(--cyan);transform:translateX(-4px);}
+.cbtn:hover::before{opacity:.04;}
+.cletter{width:30px;height:30px;border-radius:50%;background:var(--border);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:.8rem;font-weight:900;color:var(--cyan);transition:all .2s;}
+.cbtn:hover .cletter{background:var(--cyan);color:var(--bg);}
+.cbtn.correct{background:rgba(16,217,122,.1);border-color:var(--green);}
+.cbtn.correct .cletter{background:var(--green);color:#fff;}
+.cbtn.wrong{background:rgba(255,71,87,.1);border-color:var(--red);}
+.cbtn.wrong .cletter{background:var(--red);color:#fff;}
+.cbtn.disabled{pointer-events:none;opacity:.55;}
+.fb-box{display:none;margin-top:16px;border-radius:14px;padding:16px 18px;line-height:1.7;}
+.fb-box.show{display:block;animation:fadeUp .35s ease;}
+.fb-box.good{background:rgba(16,217,122,.09);border:1px solid rgba(16,217,122,.35);}
+.fb-box.bad{background:rgba(255,71,87,.09);border:1px solid rgba(255,71,87,.35);}
+.fb-title{font-size:1.05rem;font-weight:900;margin-bottom:5px;}
+.fb-box.good .fb-title{color:var(--green);}
+.fb-box.bad .fb-title{color:var(--red);}
+.fb-msg{font-size:.9rem;color:#c5d8e8;}
+.fb-tip{margin-top:10px;padding-top:10px;border-top:1px solid rgba(255,255,255,.07);font-size:.84rem;color:#94b0c8;}
+.fb-tip strong{color:var(--cyan);}
+.pts-popup{position:fixed;pointer-events:none;font-weight:900;font-size:1.4rem;color:var(--yellow);text-shadow:0 0 10px rgba(255,211,42,.7);z-index:9998;animation:ptsFloat 1.2s ease-out forwards;}
+@keyframes ptsFloat{0%{opacity:1;transform:translateY(0);}100%{opacity:0;transform:translateY(-60px);}}
+.badge-popup{position:fixed;top:80px;left:50%;transform:translateX(-50%);z-index:9997;background:var(--panel2);border:1.5px solid var(--yellow);border-radius:16px;padding:12px 24px;text-align:center;pointer-events:none;animation:badgePop .5s cubic-bezier(.34,1.56,.64,1) forwards,badgeFade 1s 1.5s ease forwards;}
+@keyframes badgePop{from{opacity:0;transform:translateX(-50%) scale(.6);}to{opacity:1;transform:translateX(-50%) scale(1);}}
+@keyframes badgeFade{to{opacity:0;}}
+.badge-popup-icon{font-size:2rem;}
+.badge-popup-name{font-size:.85rem;font-weight:700;color:var(--yellow);margin-top:2px;}
+.nxt-btn{display:none;margin-top:14px;width:100%;background:linear-gradient(135deg,var(--cyan),var(--blue));border:none;border-radius:13px;padding:14px;font-family:'Tajawal',sans-serif;font-size:1.05rem;font-weight:900;color:var(--bg);cursor:pointer;transition:all .2s;box-shadow:0 4px 20px var(--gC);}
+.nxt-btn:hover{transform:translateY(-3px);box-shadow:0 8px 28px var(--gC);}
+.nxt-btn.show{display:block;animation:fadeUp .35s ease .1s both;}
+.lc-screen{background:var(--panel);border:1px solid var(--border);border-radius:24px;padding:40px 24px;text-align:center;}
+.lc-icon{font-size:5rem;animation:bounce 1s ease-in-out infinite alternate;display:block;}
+@keyframes bounce{from{transform:translateY(0);}to{transform:translateY(-14px);}}
+.lc-title{font-family:'Baloo Bhaijaan 2',cursive;font-size:2rem;font-weight:800;background:linear-gradient(135deg,var(--cyan),var(--yellow));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin:10px 0 6px;}
+.lc-score{font-size:1rem;color:var(--muted);margin-bottom:4px;}
+.lc-score b{color:var(--cyan);font-size:1.4rem;}
+.lc-stars{font-size:2.2rem;letter-spacing:8px;margin:10px 0;}
+.lc-badge-earned{display:inline-flex;align-items:center;gap:10px;background:rgba(255,211,42,.1);border:1px solid rgba(255,211,42,.35);border-radius:14px;padding:10px 20px;margin:10px auto;font-size:.9rem;color:var(--yellow);}
+.lc-badge-earned span{font-size:1.6rem;}
+.lc-tip{background:rgba(0,229,200,.06);border:1px solid rgba(0,229,200,.2);border-radius:12px;padding:14px 16px;margin:14px 0 20px;text-align:right;font-size:.88rem;color:#b0c8dc;line-height:1.7;}
+.lc-tip strong{color:var(--cyan);}
+.lc-btns{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;}
+.btn-primary{background:linear-gradient(135deg,var(--cyan),var(--blue));border:none;border-radius:13px;padding:13px 30px;font-family:'Tajawal',sans-serif;font-size:1rem;font-weight:900;color:var(--bg);cursor:pointer;transition:all .2s;box-shadow:0 4px 18px var(--gC);}
+.btn-primary:hover{transform:translateY(-3px);box-shadow:0 8px 26px var(--gC);}
+.btn-sec{background:transparent;border:1.5px solid var(--border);border-radius:13px;padding:13px 30px;font-family:'Tajawal',sans-serif;font-size:1rem;font-weight:700;color:var(--text);cursor:pointer;transition:all .2s;}
+.btn-sec:hover{border-color:var(--violet);color:var(--violet);}
+.final-screen{background:var(--panel);border:1px solid var(--border);border-radius:24px;padding:44px 24px;text-align:center;}
+.final-trophy{font-size:5.5rem;animation:bounce 1s ease-in-out infinite alternate;display:block;}
+.final-title{font-family:'Baloo Bhaijaan 2',cursive;font-size:2.2rem;font-weight:800;background:linear-gradient(135deg,var(--cyan),var(--violet),var(--yellow));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin:12px 0 6px;}
+.final-score{font-size:1rem;color:var(--muted);margin-bottom:4px;}
+.final-score b{color:var(--yellow);font-size:1.6rem;}
+.final-badges{font-size:1.8rem;letter-spacing:6px;margin:10px 0;}
+.final-rank{display:inline-block;padding:8px 22px;border-radius:20px;font-size:.95rem;font-weight:700;background:rgba(139,92,246,.15);border:1px solid rgba(139,92,246,.4);color:var(--violet);margin:8px auto 16px;}
+.tips-box{background:rgba(0,229,200,.05);border:1px solid rgba(0,229,200,.18);border-radius:14px;padding:16px;margin:14px 0 22px;text-align:right;}
+.tips-box h3{color:var(--cyan);font-size:.95rem;margin-bottom:10px;}
+.tips-box li{list-style:none;font-size:.86rem;color:#b0c8dc;padding:5px 0;display:flex;align-items:flex-start;gap:8px;}
+.tips-box li::before{content:'◆';color:var(--cyan);font-size:.5rem;margin-top:5px;flex-shrink:0;}
+.cat-pw{background:rgba(41,121,255,.18);color:var(--blue);border:1px solid rgba(41,121,255,.4);}
+.cat-ph{background:rgba(255,71,87,.18);color:var(--red);border:1px solid rgba(255,71,87,.4);}
+.cat-pr{background:rgba(139,92,246,.18);color:var(--violet);border:1px solid rgba(139,92,246,.4);}
+.cat-sm{background:rgba(255,211,42,.18);color:var(--yellow);border:1px solid rgba(255,211,42,.4);}
+.streak-banner{position:fixed;top:16px;left:50%;transform:translateX(-50%);z-index:9996;background:var(--panel2);border:1.5px solid var(--orange);border-radius:14px;padding:10px 22px;color:var(--orange);font-weight:900;font-size:1rem;box-shadow:0 0 20px rgba(255,140,0,.3);animation:streakIn .4s cubic-bezier(.34,1.56,.64,1) both,streakOut .4s 1.4s ease forwards;}
+@keyframes streakIn{from{opacity:0;transform:translateX(-50%) translateY(-20px);}to{opacity:1;transform:translateX(-50%) translateY(0);}}
+@keyframes streakOut{to{opacity:0;transform:translateX(-50%) translateY(-15px);}}
+@media(max-width:480px){.hud{grid-template-columns:repeat(2,1fr);}.qcard{padding:18px 14px;}.cbtn{padding:12px 12px;font-size:.9rem;}.levels-grid{grid-template-columns:1fr 1fr;}}
+</style>
+</head>
+<body>
+<canvas id="cvsBg"></canvas>
+<div class="scanline"></div>
+<div id="fx"></div>
+<div id="app">
+  <div class="hdr">
+    <div class="logo">🛡️ حارس الإنترنت</div>
+    <div class="logo-sub">تعلّم الأمان الرقمي — مهمة في كل مستوى!</div>
+  </div>
+  <div class="hud">
+    <div class="hc"><div class="hc-lbl">النقاط</div><div class="hc-val vc" id="hScore">0</div></div>
+    <div class="hc"><div class="hc-lbl">الأرواح</div><div class="hc-val vl" id="hLives">🛡🛡🛡</div></div>
+    <div class="hc"><div class="hc-lbl">المستوى</div><div class="hc-val vv" id="hLevel">—</div></div>
+    <div class="hc"><div class="hc-lbl">الشارات</div><div class="hc-val vb" id="hBadge">—</div></div>
+  </div>
+  <div class="screen active" id="scMap">
+    <div class="map-title">🗺️ خريطة المهام</div>
+    <div class="map-sub">أكمل كل مستوى لتصبح حارس الإنترنت الأسطوري!</div>
+    <div class="levels-grid" id="levelsGrid"></div>
+  </div>
+  <div class="screen" id="scQ">
+    <div class="lvl-banner">
+      <div class="lvl-banner-icon" id="bIcon">🔑</div>
+      <div class="lvl-banner-info">
+        <div class="lvl-banner-name" id="bName">المستوى</div>
+        <div class="lvl-banner-prog" id="bProg">السؤال 1 من 4</div>
+        <div class="prog-bar"><div class="prog-fill" id="bFill" style="width:0%"></div></div>
+      </div>
+    </div>
+    <div class="timer-outer"><div class="timer-inner" id="timerBar" style="width:100%"></div></div>
+    <div class="qcard">
+      <div class="qcard-glow"></div>
+      <div><span class="qcat" id="qCat">...</span></div>
+      <span class="qicon" id="qIcon">🔐</span>
+      <div class="qtitle" id="qTitle"></div>
+      <div class="qstory" id="qStory"></div>
+      <div class="choices" id="choices"></div>
+      <div class="fb-box" id="fbBox">
+        <div class="fb-title" id="fbTitle"></div>
+        <div class="fb-msg" id="fbMsg"></div>
+        <div class="fb-tip" id="fbTip"></div>
+      </div>
+      <button class="nxt-btn" id="nxtBtn">التالي ←</button>
+    </div>
+  </div>
+  <div class="screen" id="scLC">
+    <div class="lc-screen">
+      <span class="lc-icon" id="lcIcon">🎉</span>
+      <div class="lc-title" id="lcTitle">أحسنت!</div>
+      <div class="lc-score">نقاط هذا المستوى: <b id="lcPts">0</b></div>
+      <div class="lc-stars" id="lcStars">⭐⭐⭐</div>
+      <div class="lc-badge-earned" id="lcBadge"><span id="lcBadgeIcon">🏅</span><div><div style="font-size:.7rem;color:var(--muted)">شارة جديدة!</div><div id="lcBadgeName">بطل</div></div></div>
+      <div class="lc-tip" id="lcTip"></div>
+      <div class="lc-btns">
+        <button class="btn-primary" id="lcNext">المستوى التالي ←</button>
+        <button class="btn-sec" onclick="showMap()">الخريطة 🗺️</button>
+      </div>
+    </div>
+  </div>
+  <div class="screen" id="scGO">
+    <div class="lc-screen">
+      <span class="lc-icon">💔</span>
+      <div class="lc-title" style="background:linear-gradient(135deg,var(--red),var(--orange));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">انتهت أرواحك!</div>
+      <div class="lc-score">وصلت إلى: <b id="goScore">0</b> نقطة</div>
+      <div class="lc-tip" style="margin-top:14px;">لا تستسلم! كل محاولة تجعلك أذكى وأأمن في عالم الإنترنت. 💪</div>
+      <div class="lc-btns">
+        <button class="btn-primary" onclick="restartCurrentLevel()">إعادة المستوى 🔄</button>
+        <button class="btn-sec" onclick="showMap()">الخريطة 🗺️</button>
+      </div>
+    </div>
+  </div>
+  <div class="screen" id="scFinal">
+    <div class="final-screen">
+      <span class="final-trophy" id="finalTrophy">🏆</span>
+      <div class="final-title" id="finalTitle">أنت حارس الإنترنت!</div>
+      <div class="final-score">مجموع نقاطك: <b id="finalScore">0</b></div>
+      <div class="final-badges" id="finalBadges">—</div>
+      <div class="final-rank" id="finalRank">🥇 أسطورة الأمان الرقمي</div>
+      <div class="tips-box">
+        <h3>📌 قواعد الأمان الرقمي الذهبية</h3>
+        <ul id="tipsList"></ul>
+      </div>
+      <button class="btn-primary" onclick="resetAll()">🔄 العب من البداية</button>
+    </div>
+  </div>
+</div>
+<script>
+(function(){
+  const c=document.getElementById('cvsBg');
+  const ctx=c.getContext('2d');
+  let W,H,nodes=[];
+  function resize(){W=c.width=window.innerWidth;H=c.height=window.innerHeight;}
+  resize();window.addEventListener('resize',()=>{resize();init();});
+  function init(){nodes=[];for(let i=0;i<55;i++)nodes.push({x:Math.random()*W,y:Math.random()*H,vx:(Math.random()-.5)*.4,vy:(Math.random()-.5)*.4,r:Math.random()*2+1});}
+  init();
+  function draw(){
+    ctx.clearRect(0,0,W,H);
+    for(let i=0;i<nodes.length;i++){
+      const n=nodes[i];n.x+=n.vx;n.y+=n.vy;
+      if(n.x<0||n.x>W)n.vx*=-1;if(n.y<0||n.y>H)n.vy*=-1;
+      ctx.beginPath();ctx.arc(n.x,n.y,n.r,0,Math.PI*2);ctx.fillStyle='rgba(0,229,200,.35)';ctx.fill();
+      for(let j=i+1;j<nodes.length;j++){const m=nodes[j];const d=Math.hypot(n.x-m.x,n.y-m.y);if(d<130){ctx.beginPath();ctx.moveTo(n.x,n.y);ctx.lineTo(m.x,m.y);ctx.strokeStyle=`rgba(41,121,255,${.12*(1-d/130)})`;ctx.lineWidth=.8;ctx.stroke();}}
+    }
+    requestAnimationFrame(draw);
+  }
+  draw();
+})();
+
+const LEVELS=[
+  {id:0,icon:'🔑',name:'أسرار كلمة السر',desc:'تعلّم كيف تصنع كلمة سر لا يمكن اختراقها',cat:'cat-pw',catName:'كلمة السر',color:'var(--blue)',badge:'🔑',badgeName:'بطل كلمة السر',levelTip:'<strong>✨ درس المستوى:</strong> كلمة السر القوية = حروف كبيرة + صغيرة + أرقام + رموز. لا تستخدم اسمك أو تاريخ ميلادك أبداً!',
+  questions:[
+    {icon:'🔐',title:'كلمة السر الأقوى!',story:'طُلب من سامي اختيار كلمة سر لحسابه الجديد. أيّ هذه الكلمات هي الأقوى والأأمن؟',choices:['sami123','password','Sm@2025#Ky!','samimohamed'],correct:2,pts:100,good:'🎉 ممتاز! كلمة السر القوية تجمع بين الحروف الكبيرة والصغيرة والأرقام والرموز وتكون طويلة.',bad:'❌ هذه الكلمة سهلة التخمين جداً!',tip:'<strong>💡 القاعدة:</strong> استخدم مزيجاً من الأحرف الكبيرة والصغيرة والأرقام والرموز مثل @#!'},
+    {icon:'🤐',title:'سرّك بين اثنين!',story:'طلب صديق عمر الأقرب منه كلمة سر الألعاب مرة واحدة فقط. ماذا يفعل؟',choices:['يعطيه لأنه صديقه','يعطيه ثم يغيّرها','يرفض بلطف ويقول لا أحد يعرف سري','يعطيه اسم المستخدم فقط'],correct:2,pts:120,good:'🛡️ صحيح! كلمة السر كالسر الشخصي لا تُشارَك مع أحد حتى لو كان صديقك المقرب.',bad:'⚠️ حتى أقرب الأصدقاء لا يجب أن يعرفوا كلمة سرك!',tip:'<strong>💡 القاعدة:</strong> كلمة السر سرية تماماً. إذا علم بها أحد، غيّرها فوراً!'},
+    {icon:'🔄',title:'متى تغيّر كلمة السر؟',story:'لاحظت رنا أن حسابها يتصرف بشكل غريب - رسائل لم ترسلها وإعدادات تغيّرت. ماذا تفعل أولاً؟',choices:['تحذف الحساب كلياً','تغيّر كلمة السر فوراً وتُخبر والديها','تنتظر لترى ما سيحدث','تُخبر صديقتها فقط'],correct:1,pts:100,good:'✅ صحيح! تغيير كلمة السر فوراً والإبلاغ خطوة ذكية لحماية حسابك.',bad:'❌ التأخير يعطي المخترق وقتاً أكثر للضرر!',tip:'<strong>💡 القاعدة:</strong> إذا شككت في أمان حسابك، غيّر كلمة السر فوراً وأخبر شخصاً بالغاً موثوقاً.'},
+    {icon:'📋',title:'كلمة سر لكل حساب!',story:'يستخدم فهد كلمة السر نفسها لكل حساباته لأنه لا يريد أن ينساها. هل هذا صحيح؟',choices:['نعم، سهل وعملي','لا، إذا سُرقت واحدة سُرقت كلها','نعم طالما أنها قوية','لا فرق، المهم أن تكون طويلة'],correct:1,pts:110,good:'🎯 ممتاز! كلمة سر مختلفة لكل حساب تحمي حساباتك الأخرى إذا اختُرق أحدها.',bad:'⚠️ كلمة سر واحدة تعني أن اختراق حساب واحد يفتح كل حساباتك!',tip:'<strong>💡 القاعدة:</strong> استخدم كلمة سر مختلفة لكل حساب. يمكنك استخدام مدير كلمات السر لمساعدتك.'}
+  ]},
+  {id:1,icon:'🎣',name:'فخ التصيّد!',desc:'تعرّف على أساليب الاحتيال الإلكتروني وكيف تتجنبها',cat:'cat-ph',catName:'التصيّد الإلكتروني',color:'var(--red)',badge:'🎣',badgeName:'كاشف الاحتيال',levelTip:'<strong>✨ درس المستوى:</strong> أي رسالة تطلب معلوماتك الشخصية أو تضغط عليك بالوقت هي عملية تصيّد واحتيال. توقف دائماً وفكّر قبل الضغط!',
+  questions:[
+    {icon:'📩',title:'رسالة مريبة!',story:'وصلت لنور رسالة: "مبروك! ربحتِ هاتفاً! اضغطي هنا وأدخلي كلمة سرك الآن!" ماذا تفعل؟',choices:['تضغط فوراً قبل انتهاء الوقت','تحذف الرسالة وتُخبر والديها','تُدخل معلومات وهمية','ترسلها لأصدقائها'],correct:1,pts:100,good:'🛡️ ذكاء! هذه رسالة تصيّد (Phishing). لا تضغط روابط مجهولة أبداً!',bad:'⚠️ هذا احتيال كلاسيكي لسرقة معلوماتك الشخصية!',tip:'<strong>💡 القاعدة:</strong> الجوائز المجانية المفاجئة مع ضغط الوقت = احتيال. احذف الرسالة وأخبر والديك.'},
+    {icon:'📲',title:'رسالة واتساب مشبوهة!',story:'وصل لفيصل: "أنت الفائز بـ500 ريال! أدخل رقم هاتف والدك الآن قبل انتهاء العرض!" ماذا يفعل؟',choices:['يُدخل الرقم بسرعة','يُحوّلها لأصدقائه','يُعطيها لوالده فوراً ليقرروا معاً','يرد ويسأل عن تفاصيل أكثر'],correct:2,pts:120,good:'🎯 صحيح! إشراك الوالدين في مثل هذه المواقف هو القرار الأذكى دائماً.',bad:'⚠️ "انتهاء الوقت" و"مجاناً" كلمات تحذيرية للاحتيال!',tip:'<strong>💡 القاعدة:</strong> عبارات مثل "اضغط الآن" و"انتهى الوقت" تُستخدم للضغط عليك. توقف وفكّر دائماً.'},
+    {icon:'🌐',title:'موقع مزيّف!',story:'عند دخول ريان لحساب اللعبة، لاحظ أن عنوان الموقع هو "g00gle.com" بدلاً من "google.com". ماذا يفعل؟',choices:['يُدخل كلمة السر لأنه يبدو متطابقاً','يغلق الصفحة فوراً ويُخبر والده','يُخبر أصدقاءه عن الموقع الجديد','لا يهم، النتيجة واحدة'],correct:1,pts:130,good:'💎 ملاحظة ممتازة! الحروف المبدّلة في الروابط علامة خطر واضحة.',bad:'❌ هذا موقع مزيّف تماماً رغم تشابهه مع الأصلي!',tip:'<strong>💡 القاعدة:</strong> تحقق دائماً من عنوان URL قبل إدخال أي معلومات. حرف واحد مختلف = موقع احتيال.'},
+    {icon:'📦',title:'تطبيق مجاني من مصدر مجهول!',story:'وجد ماجد موقعاً يقدّم لعبته المفضلة مجاناً لكن من خارج المتجر الرسمي. "آمن 100%!" هكذا يقول الموقع. ماذا يفعل؟',choices:['يحمّل فوراً، المجاني أفضل','يبحث عنها في المتجر الرسمي','يحمّل ويُجرّب','يسأل صديقه أولاً'],correct:1,pts:110,good:'🏆 رائع! المتاجر الرسمية تفحص التطبيقات للتأكد من سلامتها.',bad:'🦠 التطبيقات من مصادر مجهولة قد تكون فيروسات تسرق بياناتك!',tip:'<strong>💡 القاعدة:</strong> حمّل التطبيقات فقط من App Store أو Google Play. لا تثق بأي مصدر آخر مهما بدا موثوقاً.'}
+  ]},
+  {id:2,icon:'🌐',name:'خصوصيتك كنزك',desc:'اعرف قيمة معلوماتك الشخصية وكيف تحافظ عليها',cat:'cat-pr',catName:'الخصوصية',color:'var(--violet)',badge:'🔒',badgeName:'حارس الخصوصية',levelTip:'<strong>✨ درس المستوى:</strong> معلوماتك الشخصية (اسمك، عنوانك، مدرستك، صورك) هي كنز يجب حمايته. لا تنشرها إلا إذا كنت متأكداً من المستلم!',
+  questions:[
+    {icon:'📸',title:'صورة أمام المنزل!',story:'يريد أحمد أن ينشر صورته أمام منزله مع اسم حيّه ومدرسته. ما رأيك؟',choices:['رائع! سيحصل على إعجابات كثيرة','خطير! يكشف مكانه لأشخاص مجهولين','يمكنه نشر الصورة بدون المعلومات','يرسلها لمجموعة الفصل فقط'],correct:1,pts:110,good:'🌟 ممتاز! نشر صورتك مع معلومات مكانك يمكن أن يعرّضك لخطر حقيقي.',bad:'⚠️ أشخاص مجهولون يمكنهم معرفة مكانك من هذه المعلومات!',tip:'<strong>💡 القاعدة:</strong> لا تنشر صوراً تظهر منزلك أو مدرستك أو أي أماكن تتردد عليها يومياً.'},
+    {icon:'⚙️',title:'إعدادات الخصوصية!',story:'عند إنشاء حسابه الجديد، وجد ينوي خياري: "عام - يراه الجميع" أو "خاص - يراه أصدقائي فقط". أيهما يختار؟',choices:['العام لأكثر متابعين','الخاص لأن خصوصيته أهم','لا فرق بينهما','العام ثم يغيّره لاحقاً'],correct:1,pts:100,good:'🔒 ممتاز! الحساب الخاص يحمي معلوماتك من الغرباء على الإنترنت.',bad:'⚠️ الحساب العام يعني أي شخص في العالم يستطيع رؤية كل ما تنشره!',tip:'<strong>💡 القاعدة:</strong> اضبط حساباتك على "خاص" دائماً. راجع إعدادات الخصوصية بانتظام.'},
+    {icon:'📝',title:'نموذج تسجيل مريب!',story:'طُلب من سلمى ملء نموذج جائزة يسأل عن عنوانها وأسماء والديها ورقم هاتف والدها. ماذا تفعل؟',choices:['تملأه كاملاً للحصول على الجائزة','تملأ الاسم فقط','ترفض وتُخبر والديها فوراً','تكتب معلومات وهمية'],correct:2,pts:120,good:'🛡️ بطلة! طلب هذه المعلومات من طفل مريب جداً. الإبلاغ هو القرار الصحيح.',bad:'⚠️ هذه معلومات حساسة جداً لا يجب تقديمها لأي جهة مجهولة!',tip:'<strong>💡 القاعدة:</strong> لا تُعطِ أي معلومات شخصية عبر الإنترنت دون موافقة والديك. الجوائز المجانية المريبة عادةً احتيال.'},
+    {icon:'💬',title:'مشاركة معلومات في الشات!',story:'طلب شخص ما في غرفة الدردشة من دانة أن تُرسل له رقم هاتفها "ليتواصلا بشكل أسهل". ماذا ترفض؟',choices:['ترسله لأنه يبدو لطيفاً','ترسل رقم هاتف المنزل بدلاً عنه','ترفض وتُغلق المحادثة وتُخبر والديها','ترسله لكنها تحتفظ بالتواصل سراً'],correct:2,pts:130,good:'💪 قرار صحيح وشجاع! لا تُعطِ معلوماتك الشخصية لأشخاص مجهولين على الإنترنت.',bad:'⚠️ أشخاص الإنترنت المجهولون ليسوا دائماً من يدّعون أنهم عليه!',tip:'<strong>💡 القاعدة:</strong> لا ترسل رقم هاتفك أو أي معلومات تواصل شخصية لأشخاص قابلتهم فقط على الإنترنت.'}
+  ]},
+  {id:3,icon:'🦸',name:'بطل الإنترنت الآمن',desc:'المستوى الأصعب — تحقق مهاراتك في مواقف معقدة',cat:'cat-sm',catName:'مواقف متقدمة',color:'var(--yellow)',badge:'🦸',badgeName:'بطل الإنترنت',levelTip:'<strong>✨ درس المستوى:</strong> في عالم الإنترنت، توقف دائماً وفكّر قبل أي قرار. الشك الصحي هو أفضل سلاح ضد الأخطار الرقمية!',
+  questions:[
+    {icon:'💻',title:'التحديثات مهمة!',story:'ظهرت رسالة تحديث على جهاز دانة. قالت أختها: "لا تحدّثي، يبطّئ الجهاز!" ما الصحيح؟',choices:['أختها على حق دائماً','التحديثات الرسمية تُصلح الثغرات الأمنية ويجب تثبيتها','تحتاج فقط تحديث الألعاب','تحذف الرسالة فقط'],correct:1,pts:120,good:'⚡ صحيح! التحديثات تُغلق الثغرات التي يستغلها المخترقون للوصول لجهازك.',bad:'❌ التحديثات الأمنية مهمة جداً ولا يجب تجاهلها!',tip:'<strong>💡 القاعدة:</strong> حدّث دائماً نظام التشغيل والتطبيقات الرسمية. هذه التحديثات تحميك من الاختراق.'},
+    {icon:'🙅',title:'غريب على الإنترنت!',story:'تلقّت ليلى طلب صداقة من شخص مجهول يطلب صورتها ومعلومات مدرستها "لأنه يحب أن يتعرّف على أصدقاء جدد". ماذا تفعل؟',choices:['تقبل لأنه يبدو ودوداً','ترفض وتحكي لأهلها فوراً','تُعطيه الصورة فقط بدون معلومات','تتكلم معه سراً أولاً لتعرفه أكثر'],correct:1,pts:130,good:'🌟 قرار ممتاز! لا تقبل صداقة أو تُعطِ معلوماتك لأشخاص مجهولين أبداً.',bad:'🚨 الأشخاص على الإنترنت قد لا يكونون من يدّعون أنهم عليه!',tip:'<strong>💡 القاعدة:</strong> قبول صداقة شخص مجهول + مشاركة معلوماتك = خطر حقيقي. أخبر والديك فوراً.'},
+    {icon:'🦸',title:'التنمّر الإلكتروني!',story:'لاحظت سلمى أن زملاءها يرسلون رسائل مؤلمة لزميلتها هند ويسخرون منها في مجموعة الفصل. ماذا تفعل سلمى؟',choices:['تتجاهل لأنه لا يخصّها','تنضم إليهم','تُخبر معلمها وأهلها وتدعم هند','ترسل لهند رسالة سرية فقط'],correct:2,pts:140,good:'💪 بطلة! التنمّر الإلكتروني ضار جداً. الإبلاغ والدعم هما الحل الصحيح.',bad:'❌ التجاهل يجعل الأمر أسوأ. يجب التصرف!',tip:'<strong>💡 القاعدة:</strong> التنمّر الإلكتروني جريمة. إذا رأيته أو تعرضت له، أبلغ فوراً ولا تبقَ صامتاً.'},
+    {icon:'🚨',title:'شيء يزعجك!',story:'شاهدت نوف محتوى مخيفاً على الإنترنت أزعجها كثيراً، أو طلب منها شخص ما شيئاً يجعلها غير مرتاحة. ماذا تفعل؟',choices:['تتجاهل وتحاول نسيانه وحدها','تحكي لوالديها أو شخص بالغ موثوق فوراً','تحذف التطبيق فقط','ترد على الشخص وتشرح له'],correct:1,pts:150,good:'🌟 شجاعة حقيقية! الحديث مع شخص بالغ موثوق هو دائماً القرار الأصح.',bad:'❌ مشاعرك مهمة. لا تتجاهلها أبداً. التحدث مع والديك هو الأسلم.',tip:'<strong>💡 القاعدة:</strong> إذا رأيت شيئاً مزعجاً أو شعرت بعدم ارتياح على الإنترنت، أخبر والديك فوراً. لن تكون بمشكلة — أنت تفعل الصح!'}
+  ]}
+];
+
+const FINAL_TIPS=['استخدم كلمات سر قوية ومختلفة لكل حساب.','لا تُشارك معلوماتك الشخصية مع الغرباء.','أبلغ والديك فوراً عن أي شيء يزعجك على الإنترنت.','تحقق دائماً من عنوان المواقع قبل إدخال بياناتك.','حمّل التطبيقات من المتاجر الرسمية فقط.','اضبط حساباتك على وضع "خاص".','لا تضغط روابط مشبوهة مهما كانت الجائزة المعروضة.'];
+
+let G={score:0,lives:3,badges:[],levelProgress:{},curLevel:0,curQ:0,curLevelPts:0,streak:0,timerInterval:null,timeLeft:15,answered:false};
+
+function resetAll(){G={score:0,lives:3,badges:[],levelProgress:{},curLevel:0,curQ:0,curLevelPts:0,streak:0,timerInterval:null,timeLeft:15,answered:false};updateHUD();buildMap();showScreen('scMap');}
+
+function buildMap(){
+  const grid=document.getElementById('levelsGrid');grid.innerHTML='';
+  LEVELS.forEach((lv,i)=>{
+    const prog=G.levelProgress[lv.id];const locked=i>0&&!G.levelProgress[LEVELS[i-1].id];const done=!!prog;const stars=prog?prog.stars:0;
+    const div=document.createElement('div');div.className='lvl-card'+(locked?' locked':'')+(done?' done':'');
+    div.innerHTML=`<div class="lvl-badge">مستوى ${i+1}</div><div class="lvl-icon">${lv.icon}</div><div class="lvl-name">${lv.name}</div><div class="lvl-desc">${lv.desc}</div><div class="lvl-stars">${stars>0?'⭐'.repeat(stars)+'☆'.repeat(3-stars):'☆☆☆'}</div>`;
+    if(!locked)div.onclick=()=>startLevel(i);grid.appendChild(div);
+  });
+}
+
+function startLevel(idx){G.curLevel=idx;G.curQ=0;G.curLevelPts=0;G.lives=3;G.streak=0;updateHUD();renderQ();showScreen('scQ');}
+function restartCurrentLevel(){startLevel(G.curLevel);}
+function showMap(){buildMap();showScreen('scMap');}
+
+function renderQ(){
+  const lv=LEVELS[G.curLevel];const q=lv.questions[G.curQ];const total=lv.questions.length;
+  document.getElementById('bIcon').textContent=lv.icon;document.getElementById('bName').textContent=lv.name;
+  document.getElementById('bProg').textContent=`السؤال ${G.curQ+1} من ${total}`;
+  document.getElementById('bFill').style.width=((G.curQ/total)*100)+'%';
+  const catEl=document.getElementById('qCat');catEl.className='qcat '+lv.cat;catEl.textContent=lv.catName;
+  document.getElementById('qIcon').textContent=q.icon;document.getElementById('qTitle').textContent=q.title;document.getElementById('qStory').textContent=q.story;
+  document.getElementById('fbBox').className='fb-box';document.getElementById('nxtBtn').className='nxt-btn';G.answered=false;
+  const grid=document.getElementById('choices');grid.innerHTML='';
+  const letters=['أ','ب','ج','د'];
+  q.choices.forEach((c,i)=>{const btn=document.createElement('button');btn.className='cbtn';btn.innerHTML=`<span class="cletter">${letters[i]}</span>${c}`;btn.onclick=()=>pick(i,btn);grid.appendChild(btn);});
+  startTimer();
+}
+
+function startTimer(){
+  clearInterval(G.timerInterval);G.timeLeft=15;
+  const bar=document.getElementById('timerBar');bar.style.width='100%';bar.style.background='linear-gradient(90deg,var(--green),var(--cyan))';
+  G.timerInterval=setInterval(()=>{
+    G.timeLeft--;const pct=(G.timeLeft/15)*100;bar.style.width=pct+'%';
+    if(G.timeLeft<=5)bar.style.background='linear-gradient(90deg,var(--red),var(--orange))';
+    else if(G.timeLeft<=9)bar.style.background='linear-gradient(90deg,var(--yellow),var(--orange))';
+    if(G.timeLeft<=0){clearInterval(G.timerInterval);if(!G.answered)timeOut();}
+  },1000);
+}
+
+function timeOut(){
+  G.answered=true;G.streak=0;G.lives--;
+  const q=LEVELS[G.curLevel].questions[G.curQ];
+  const btns=document.querySelectorAll('.cbtn');
+  btns.forEach((b,i)=>{b.classList.add('disabled');if(i===q.correct)b.classList.add('correct');});
+  showFeedback(false,'⏰ انتهى الوقت!',`الجواب الصحيح هو: ${q.choices[q.correct]}`,q.tip);
+  updateHUD();document.getElementById('nxtBtn').className='nxt-btn show';
+  document.getElementById('nxtBtn').onclick=advanceQ;
+}
+
+function pick(idx,btn){
+  if(G.answered)return;G.answered=true;clearInterval(G.timerInterval);
+  const lv=LEVELS[G.curLevel];const q=lv.questions[G.curQ];
+  const allBtns=document.querySelectorAll('.cbtn');allBtns.forEach(b=>b.classList.add('disabled'));
+  const correct=idx===q.correct;
+  if(correct){
+    btn.classList.add('correct');G.streak++;
+    const bonusMult=G.streak>=5?2:G.streak>=3?1.5:1;
+    const pts=Math.round(q.pts*bonusMult+(G.timeLeft*3));
+    G.score+=pts;G.curLevelPts+=pts;
+    showFeedback(true,'✅ إجابة صحيحة!',q.good,q.tip);
+    showPtsPopup(btn,'+'+pts);spawnSparks(btn);spawnConfetti(20);
+    if(G.streak>=3)showStreak();updateHUD(true);
+  } else {
+    btn.classList.add('wrong');allBtns[q.correct].classList.add('correct');
+    G.streak=0;G.lives--;
+    showFeedback(false,'❌ إجابة خاطئة!',q.bad,q.tip);
+    shakeCard();updateHUD(false,true);
+  }
+  document.getElementById('nxtBtn').className='nxt-btn show';
+  document.getElementById('nxtBtn').onclick=advanceQ;
+}
+
+function advanceQ(){
+  if(G.lives<=0){showScreen('scGO');document.getElementById('goScore').textContent=G.score;return;}
+  G.curQ++;
+  if(G.curQ>=LEVELS[G.curLevel].questions.length)levelComplete();else renderQ();
+}
+
+function levelComplete(){
+  const lv=LEVELS[G.curLevel];
+  const maxPts=lv.questions.reduce((a,q)=>a+q.pts,0);
+  const pct=G.curLevelPts/maxPts;
+  const stars=G.lives===3&&pct>=.8?3:G.lives>=2&&pct>=.5?2:1;
+  G.levelProgress[lv.id]={done:true,stars,pts:G.curLevelPts};
+  if(!G.badges.find(b=>b.icon===lv.badge)){G.badges.push({icon:lv.badge,name:lv.badgeName});showBadgePopup(lv.badge,lv.badgeName);}
+  updateHUD();spawnConfetti(40);
+  document.getElementById('lcIcon').textContent=stars===3?'🏆':stars===2?'🥈':'🥉';
+  document.getElementById('lcTitle').textContent=stars===3?'مذهل! أداء مثالي!':stars===2?'أحسنت! عمل رائع!':'أتممت المستوى!';
+  document.getElementById('lcPts').textContent=G.curLevelPts;
+  document.getElementById('lcStars').textContent='⭐'.repeat(stars)+'☆'.repeat(3-stars);
+  document.getElementById('lcBadgeIcon').textContent=lv.badge;
+  document.getElementById('lcBadgeName').textContent=lv.badgeName;
+  document.getElementById('lcTip').innerHTML=lv.levelTip;
+  const nxtBtn=document.getElementById('lcNext');const nextIdx=G.curLevel+1;
+  if(nextIdx<LEVELS.length){nxtBtn.textContent='المستوى التالي ←';nxtBtn.onclick=()=>startLevel(nextIdx);}
+  else{nxtBtn.textContent='🏆 شاشة النهاية';nxtBtn.onclick=showFinalScreen;}
+  showScreen('scLC');
+}
+
+function showFinalScreen(){
+  spawnConfetti(60);
+  const rank=G.score>=1800?'🥇 أسطورة الأمان الرقمي':G.score>=1200?'🥈 محترف الأمان':G.score>=700?'🥉 حارس جيد':'🌱 متعلّم نشيط';
+  const trophy=G.score>=1800?'🏆':G.score>=1200?'🥈':'🎖️';
+  document.getElementById('finalTrophy').textContent=trophy;
+  document.getElementById('finalTitle').textContent='أنت حارس الإنترنت الأسطوري!';
+  document.getElementById('finalScore').textContent=G.score;
+  document.getElementById('finalBadges').textContent=G.badges.map(b=>b.icon).join(' ')||'🌱';
+  document.getElementById('finalRank').textContent=rank;
+  const list=document.getElementById('tipsList');list.innerHTML='';
+  FINAL_TIPS.forEach(t=>{const li=document.createElement('li');li.textContent=t;list.appendChild(li);});
+  showScreen('scFinal');
+}
+
+function showFeedback(good,title,msg,tip){
+  const box=document.getElementById('fbBox');box.className='fb-box '+(good?'good':'bad')+' show';
+  document.getElementById('fbTitle').textContent=title;document.getElementById('fbMsg').textContent=msg;document.getElementById('fbTip').innerHTML=tip;
+}
+
+function updateHUD(scoreChanged=false,livesChanged=false){
+  document.getElementById('hScore').textContent=G.score;
+  document.getElementById('hLives').textContent='🛡'.repeat(Math.max(0,G.lives))||'💔';
+  document.getElementById('hLevel').textContent=`${G.curLevel+1}/${LEVELS.length}`;
+  document.getElementById('hBadge').textContent=G.badges.length?G.badges.slice(-3).map(b=>b.icon).join(''):'—';
+  if(scoreChanged)pulse('hScore');if(livesChanged)pulse('hLives');
+}
+
+function pulse(id){const el=document.getElementById(id);el.classList.remove('pulse-anim');void el.offsetWidth;el.classList.add('pulse-anim');}
+
+function spawnConfetti(n=25){
+  const fx=document.getElementById('fx');
+  const colors=['#00e5c8','#2979ff','#8b5cf6','#f472b6','#10d97a','#ffd32a','#ff4757','#ff8c00'];
+  for(let i=0;i<n;i++){
+    const c=document.createElement('div');c.className='cf';const isCircle=Math.random()>.5;
+    c.style.cssText=`left:${Math.random()*100}%;background:${colors[Math.floor(Math.random()*colors.length)]};width:${Math.random()*10+5}px;height:${Math.random()*10+5}px;--r:${isCircle?'50%':'2px'};--d:${(Math.random()*1.8+1).toFixed(2)}s;--dl:${(Math.random()*.6).toFixed(2)}s;--rot:${Math.random()>.5?'':'-'}${Math.floor(Math.random()*720+360)}deg;`;
+    fx.appendChild(c);setTimeout(()=>c.remove(),2500);
+  }
+}
+
+function spawnSparks(btn){
+  const rect=btn.getBoundingClientRect();const cx=rect.left+rect.width/2;const cy=rect.top+rect.height/2;
+  const fx=document.getElementById('fx');const colors=['#00e5c8','#ffd32a','#10d97a','#2979ff'];
+  for(let i=0;i<10;i++){
+    const s=document.createElement('div');s.className='spark';const ang=Math.random()*Math.PI*2;const dist=30+Math.random()*50;
+    s.style.cssText=`width:8px;height:8px;left:${cx-4}px;top:${cy-4}px;background:${colors[i%colors.length]};--tx:${Math.cos(ang)*dist}px;--ty:${Math.sin(ang)*dist}px;`;
+    fx.appendChild(s);setTimeout(()=>s.remove(),700);
+  }
+}
+
+function showPtsPopup(btn,text){
+  const rect=btn.getBoundingClientRect();const el=document.createElement('div');el.className='pts-popup';el.textContent=text;
+  el.style.cssText=`left:${rect.left+rect.width/2-30}px;top:${rect.top-10}px;`;
+  document.body.appendChild(el);setTimeout(()=>el.remove(),1300);
+}
+
+function showBadgePopup(icon,name){
+  const el=document.createElement('div');el.className='badge-popup';
+  el.innerHTML=`<div class="badge-popup-icon">${icon}</div><div class="badge-popup-name">🏅 ${name}</div>`;
+  document.body.appendChild(el);setTimeout(()=>el.remove(),2200);
+}
+
+function showStreak(){
+  const msgs=['🔥 تسلسل ×3!','🔥🔥 تسلسل ×4!','🔥🔥🔥 تسلسل ×5!','⚡ لا يُوقف! ×'+G.streak];
+  const el=document.createElement('div');el.className='streak-banner';
+  el.textContent=msgs[Math.min(G.streak-3,3)]||msgs[3];
+  document.body.appendChild(el);setTimeout(()=>el.remove(),2000);
+}
+
+function shakeCard(){
+  const card=document.getElementById('qCard')||document.querySelector('.qcard');if(!card)return;
+  card.style.transform='translateX(10px)';setTimeout(()=>{card.style.transform='translateX(-10px)';},80);
+  setTimeout(()=>{card.style.transform='translateX(8px)';},160);setTimeout(()=>{card.style.transform='translateX(-6px)';},240);
+  setTimeout(()=>{card.style.transform='translateX(0)';},320);
+}
+
+function showScreen(id){
+  document.querySelectorAll('.screen').forEach(s=>{s.classList.remove('active');s.style.display='none';});
+  const el=document.getElementById(id);el.style.display='block';el.classList.add('active');
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+resetAll();
+</script>
+</body>
+</html>
